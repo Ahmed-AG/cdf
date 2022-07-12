@@ -1,0 +1,26 @@
+{
+    "pipelines" :[
+        {
+            "name" : "Production-Pipeline1",
+            "provider" : "aws",
+            "source" : {
+                "source_type" : "codecommit",
+                "repo_name" : "big_infra",
+                "branch" : "main"
+            },
+            "parameters" : {
+            },
+            "deployment" : {
+                "aws_account" : "99887767",
+                "region" : "us-east-1",
+                "type" : "cfn",
+                "deployment_file" : "main.yaml",
+                "checks" : [
+                    "cfn_nag", 
+                    "checkov", 
+                    "zap"
+                ]
+            }
+        }
+    ]
+}

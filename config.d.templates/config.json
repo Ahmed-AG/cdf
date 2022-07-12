@@ -5,20 +5,23 @@
             "provider" : "aws",
             "source" : {
                 "source_type" : "codecommit",
-                "repo_name" : "big_infra",
+                "repo_name" : "cdf-repo1",
                 "branch" : "main"
             },
-            "parameters" : {
-            },
             "deployment" : {
-                "aws_account" : "99887767",
+                "assume_role" :{
+                    "role": "TODO"
+                },
+                "aws_account" : "******",
                 "region" : "us-east-1",
                 "type" : "cfn",
+                "parameters" : "TemplateBucket=$SOURCE_BUCKET Region=$REGION",
+                "capabilities" : "CAPABILITY_IAM CAPABILITY_NAMED_IAM",
                 "deployment_file" : "main.yaml",
                 "checks" : [
+                    "general_all",
                     "cfn_nag", 
-                    "checkov", 
-                    "zap"
+                    "checkov"
                 ]
             }
         }

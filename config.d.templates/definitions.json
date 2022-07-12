@@ -1,0 +1,70 @@
+{
+    "deployment" : {
+        "cfn" : {
+            "install" : [
+                "aws --version"
+            ],
+            "pre_build" : [],
+            "build" : [
+                "SOURCE_BUCKET=$(aws s3 ls | grep sourcebucket | cut -d ' ' -f3)",
+                "echo \"SOURCE_BUCKET=\"$SOURCE_BUCKET",
+                "STACK_NAME=CFN-$(echo $PIPELINE | jq -r '.name')",
+                "echo \"STACK_NAME=\"$STACK_NAME",
+                "REGION=$(echo $PIPELINE | jq -r '.deployment.region')",
+                "echo \"REGION=\"$REGION",
+                "TEMPLATE_FILE=$(echo $PIPELINE | jq -r '.deployment.deployment_file')",
+                "echo \"TEMPLATE_FILE=\"$TEMPLATE_FILE",
+                "PARAMETERS=$(echo $PIPELINE | jq -r '.deployment.parameters')",
+                "echo \"PARAMETERS=\"$PARAMETERS",
+                "CAPABILITIES=$(echo $PIPELINE | jq -r '.deployment.capabilities')",
+                "echo \"CAPABILITIES=\"$CAPABILITIES",
+                "aws s3 sync . s3://$SOURCE_BUCKET",
+                "aws cloudformation deploy --stack-name $STACK_NAME --template-file $TEMPLATE_FILE --parameter-overrides $PARAMETERS --capabilities $CAPABILITIES"
+            ],
+            "post_build" : []
+        },
+        "terraform" : {
+            "install" : [],
+            "pre_build" : [],
+            "build" : [
+                "#TODO: Terraform build"
+            ],
+            "post_build" : []
+        }
+    },
+    "checks" : {
+        "general_all" : {
+            "install" : [
+                "aws --version"
+            ],
+            "pre_build" : [
+                "REPORTS_BUCKET=$(aws s3 ls | grep reportsbucket | cut -d ' ' -f3)",
+                "echo \"REPORTS_BUCKET=\"$REPORTS_BUCKET",
+                "STACK_NAME=CFN-$(echo $PIPELINE | jq -r '.name')",
+                "echo \"STACK_NAME=\"$STACK_NAME"
+            ],
+            "post_build" : [
+                "CURRENT_TIME=$(date +\"%S%M%H%m%d%y\")",
+                "aws s3 cp *output* s3://$REPORTS_BUCKET/$STACK_NAME/$CURRENT_TIME/"
+            ]
+        },
+        "cfn_nag" : {
+            "install" : [
+                "cfn_nag -v"
+            ],
+            "pre_build" : [
+                "TEMPLATE_FILE=$(echo $PIPELINE | jq -r '.deployment.deployment_file')",
+                "echo \"TEMPLATE_FILE=\"$TEMPLATE_FILE",
+                "cfn_nag_scan --input-path $TEMPLATE_FILE --output-format json > cfn_nag_output.json"
+            ],
+            "post_build" : []
+        },
+        "checkov" : {
+            "install" : [
+                "checkov --version"
+            ],
+            "pre_build" : [],
+            "post_build" : []
+        }
+    }
+}

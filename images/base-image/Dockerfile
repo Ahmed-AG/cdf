@@ -13,6 +13,11 @@ RUN pip3 install checkov
 # cfn_nag
 RUN gem install cfn-nag
 
+# Snyk
+RUN curl https://static.snyk.io/cli/latest/snyk-alpine -o snyk \
+    && chmod +x ./snyk \
+    && mv ./snyk /usr/local/bin/
+
 # awscli v2
 RUN curl -sL ${AWSCLI_URL} -o awscliv2.zip \
     && unzip -q awscliv2.zip \

@@ -7,16 +7,16 @@
             "pre_build" : [],
             "build" : [
                 "SOURCE_BUCKET=$(aws s3 ls | grep sourcebucket | cut -d ' ' -f3)",
-                "echo \"SOURCE_BUCKET=\"$SOURCE_BUCKET",
                 "STACK_NAME=CFN-$(echo $PIPELINE | jq -r '.name')",
-                "echo \"STACK_NAME=\"$STACK_NAME",
                 "REGION=$(echo $PIPELINE | jq -r '.deployment.region')",
-                "echo \"REGION=\"$REGION",
                 "TEMPLATE_FILE=$(echo $PIPELINE | jq -r '.deployment.deployment_file')",
-                "echo \"TEMPLATE_FILE=\"$TEMPLATE_FILE",
                 "PARAMETERS=$(echo $PIPELINE | jq -r '.deployment.parameters')",
-                "echo \"PARAMETERS=\"$PARAMETERS",
                 "CAPABILITIES=$(echo $PIPELINE | jq -r '.deployment.capabilities')",
+                "echo \"SOURCE_BUCKET=\"$SOURCE_BUCKET",
+                "echo \"STACK_NAME=\"$STACK_NAME",
+                "echo \"REGION=\"$REGION",
+                "echo \"TEMPLATE_FILE=\"$TEMPLATE_FILE",
+                "echo \"PARAMETERS=\"$PARAMETERS",
                 "echo \"CAPABILITIES=\"$CAPABILITIES",
                 "aws s3 sync . s3://$SOURCE_BUCKET",
                 "aws cloudformation deploy --stack-name $STACK_NAME --template-file $TEMPLATE_FILE --parameter-overrides $PARAMETERS --capabilities $CAPABILITIES"
@@ -55,13 +55,20 @@
             "pre_build" : [
                 "TEMPLATE_FILE=$(echo $PIPELINE | jq -r '.deployment.deployment_file')",
                 "echo \"TEMPLATE_FILE=\"$TEMPLATE_FILE",
-                "cfn_nag_scan --input-path $TEMPLATE_FILE --output-format json > cfn_nag_output.json"
+                "cfn_nag_scan --input-path $TEMPLATE_FILE --output-format json > cfn_nag_output.json || true"
             ],
             "post_build" : []
         },
         "checkov" : {
             "install" : [
                 "checkov --version"
+            ],
+            "pre_build" : [],
+            "post_build" : []
+        },
+        "snyk" : {
+            "install" : [
+                "snyk --version"
             ],
             "pre_build" : [],
             "post_build" : []

@@ -15,8 +15,8 @@
                 "aws_account" : "******",
                 "region" : "us-east-1",
                 "type" : "cfn",
-                "parameters" : "TemplateBucket=$SOURCE_BUCKET Region=$REGION",
-                "capabilities" : "CAPABILITY_IAM CAPABILITY_NAMED_IAM",
+                "parameters" : "VpcCIDR=10.0.0.0/16 Region=$REGION",
+                "capabilities" : "CAPABILITY_NAMED_IAM",
                 "deployment_file" : "main.yaml",
                 "checks" : [
                     "general_all",

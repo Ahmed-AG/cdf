@@ -12,11 +12,11 @@
                 "assume_role" :{
                     "role": "TODO"
                 },
-                "aws_account" : "******",
+                "aws_account" : "",
                 "region" : "us-east-1",
                 "type" : "cfn",
                 "parameters" : "VpcCIDR=10.0.0.0/16 Region=$REGION",
-                "capabilities" : "CAPABILITY_NAMED_IAM",
+                "capabilities" : "CAPABILITY_IAM CAPABILITY_NAMED_IAM",
                 "deployment_file" : "main.yaml",
                 "checks" : [
                     "general_all",

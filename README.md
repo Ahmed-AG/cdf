@@ -3,7 +3,7 @@
 Cloud Deployment Framework (CDF) provides an automated, cloud native, and secure way to deploy cloud resources. 
 Based on JSON configuration files, CDF uses AWS CDK to automatically create Codepipeline Pipelines that clone repos, run secrutiy checks on code, and deploy resources. It will also build any needed docker containers for Codebuild Projects
 
-![alt text](https://github.com/Ahmed-AG/cdf/blob/v0-1/cdf-drawio.jpg?raw=true)
+![alt text](https://github.com/Ahmed-AG/cdf/blob/v0-1/cdf.jpg?raw=true)
 
 ## Supported tools
 ### Deployment tools
@@ -31,8 +31,8 @@ cdk bootstrap aws://ACCOUNT-NUMBER-1/REGION-1
 
 ## Usage
  1. Clone the repo
- 2. rename `config.d.templates` to `config.d`
- 2. Edit `config.d/config.json`: Set pipelines names, sources, deployment options, and any parameters needed
+ 2. Rename `config.d.templates` to `config.d`
+ 2. Edit `config.d/config.json` to set pipelines names, sources, deployment options, and any parameters needed
 
 Sample config.json file:
 

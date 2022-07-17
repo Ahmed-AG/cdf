@@ -32,6 +32,8 @@ cdk bootstrap aws://ACCOUNT-NUMBER-1/REGION-1
  2. rename `config.d.templates` to `config.d`
  2. Edit `config.d/config.json`: Set pipelines names, sources, deployment options, and any parameters needed
 
+Sample config.json file:
+
 ```bash
 {
     "pipelines" :[
@@ -40,19 +42,23 @@ cdk bootstrap aws://ACCOUNT-NUMBER-1/REGION-1
             "provider" : "aws",
             "source" : {
                 "source_type" : "codecommit",
-                "repo_name" : "big_infra",
+                "repo_name" : "cdf-repo1",
                 "branch" : "main"
             },
-            "parameters" : {
-            },
             "deployment" : {
-                "aws_account" : "************",
+                "assume_role" :{
+                    "role": ""
+                },
+                "aws_account" : "",
                 "region" : "us-east-1",
                 "type" : "cfn",
+                "parameters" : "VpcCIDR=10.0.0.0/16 Region=$REGION",
+                "capabilities" : "CAPABILITY_IAM CAPABILITY_NAMED_IAM",
                 "deployment_file" : "main.yaml",
                 "checks" : [
+                    "general_all",
                     "cfn_nag", 
-                    "checkov" 
+                    "checkov"
                 ]
             }
         }

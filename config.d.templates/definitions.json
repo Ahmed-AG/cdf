@@ -55,7 +55,8 @@
             "pre_build" : [
                 "TEMPLATE_FILE=$(echo $PIPELINE | jq -r '.deployment.deployment_file')",
                 "echo \"TEMPLATE_FILE=\"$TEMPLATE_FILE",
-                "cfn_nag_scan --input-path $TEMPLATE_FILE --output-format json > cfn_nag_output.json || true"
+                "cfn_nag_scan --input-path $TEMPLATE_FILE --output-format json > cfn_nag_output.json || true",
+                "cat cfn_nag_output.json"
             ],
             "post_build" : []
         },

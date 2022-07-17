@@ -58,5 +58,9 @@ Infrastructure as Code Tools  | Link |
 Cloud Formation | https://aws.amazon.com/cloudformation/
 
 ### Security testing tools
+Tools | Description | Link |
+--- | --- | --- |
+cfn_nag | The cfn-nag tool looks for patterns in CloudFormation templates that may indicate insecure infrastructure | https://github.com/stelligent/cfn_nag
+
 ## Support
 To report a bug, request a feature, or submit a suggestion/feedback, please submit an issue through the GitHub repository: https://github.com/Ahmed-AG/cdf/issues/new

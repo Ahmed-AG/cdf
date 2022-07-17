@@ -25,8 +25,12 @@ class cdf(Stack):
             buildspec = self.generate_buildspec(pipeline, definitions )
             print(json.dumps(buildspec, indent=4))
 
+            # Create IAM Statement
+            iam_policy_file = pipeline['deployment']['iam_policy_file']
+            iam_policy = self.import_json_file(iam_policy_file)
+
             # Build Pipeline
-            build_codepipeline(app, "cdf-" + pipeline['name'], pipeline, buildspec)
+            build_codepipeline(app, "cdf-" + pipeline['name'], pipeline, buildspec, iam_policy)
         
         app.synth()
         

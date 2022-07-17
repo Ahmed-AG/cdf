@@ -18,7 +18,7 @@ from aws_cdk import (
 
 class build_codepipeline(Stack):
 
-    def __init__(self, scope: Construct, construct_id: str, pipeline, buildspec, **kwargs) -> None:
+    def __init__(self, scope: Construct, construct_id: str, pipeline, buildspec, iam_policy, **kwargs) -> None:
         super().__init__(scope, construct_id, **kwargs)
 
         #TODO:
@@ -49,6 +49,13 @@ class build_codepipeline(Stack):
             resources=["*"],
             actions=["*"]
         ))
+        # for statement in iam_policy['Statement']:
+        #     print(statement)
+        #     codebuild_role.add_to_policy(iam.PolicyStatement(
+        #     resources=[statement['Resource']],
+        #     actions=[statement['Action']],
+        #     effect=[statement['Effect']]
+        # ))
 
         project = codebuild.PipelineProject(self, "codebuild_" + pipeline['name'],
             build_spec=codebuild.BuildSpec.from_object(buildspec),

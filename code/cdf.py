@@ -2,7 +2,9 @@ import json
 from typing import Dict
 import aws_cdk as cdk
 from code.build_codepipeline import build_codepipeline
-from code.custom_dataclasses import *
+from code.data_types.pipeline import *
+from code.data_types.iam_role import *
+from code.data_types.definitions import *
 from constructs import Construct
 from aws_cdk import (
     Duration,
@@ -20,6 +22,13 @@ class cdf(Stack):
 
         config = self.import_json_file(config_file)
         definitions = self.import_json_file(definitions_file)
+        try:
+            validation = validate_definitions(definitions)
+            if validation:
+                raise Exception(f"Definitions configuration is not valid: {validation}")
+        except KeyError as e:
+            raise KeyError(f"Definitions configuration is missing key {e}") from e
+        definitions = Definitions.from_json(json.dumps(definitions))
 
         for pipeline in config['pipelines']:
             # Validate every pipeline configuration
@@ -29,10 +38,10 @@ class cdf(Stack):
                     raise Exception(f"Pipeline configuration is not valid: {validation}")
             except KeyError as e:
                 raise KeyError(f'Pipeline configuration is missing key {e}') from e
-
             pipeline = Pipeline.from_json(json.dumps(pipeline))
+            
             # Create BuildSpec
-            buildspec = self.generate_buildspec(pipeline, definitions )
+            buildspec = self.generate_buildspec(pipeline, definitions)
             print(json.dumps(buildspec, indent=4))
 
             # Create IAM Statement
@@ -59,33 +68,33 @@ class cdf(Stack):
             file_json = json.load(file_object)    
         return file_json
 
-    def generate_buildspec(self, pipeline: Pipeline, definitions: object) -> Dict[str, any]:
+    def generate_buildspec(self, pipeline: Pipeline, definitions: Definitions) -> Dict[str, any]:
         # Initializations
         install_stage = {"commands" : []}
         pre_build_stage = {"commands" : []}
         build_stage = {"commands" : []}
         post_build_stage = {"commands" : []}
 
-        # Creating install, pre_build, and post_build stages
+        # Creating install, pre_build, and post_build stages        
         for check in pipeline.deployment.checks:
-            try: 
-                if definitions['checks'][check].__str__:
-                    for command in definitions['checks'][check]['install']:
+            try:
+                if definitions.checks.get(check).__str__:
+                    for command in definitions.checks.get(check).install:
                         install_stage['commands'].append(command)
-                    for command in definitions['checks'][check]['pre_build']:
+                    for command in definitions.checks.get(check).pre_build:
                         pre_build_stage['commands'].append(command)
-                    for command in definitions['checks'][check]['post_build']:
+                    for command in definitions.checks.get(check).post_build:
                         post_build_stage['commands'].append(command)
             except:
                 print("Check: ", check, "is not defined")
-        
+
         # Creating build stage
-        try: 
-            if definitions['deployment'][pipeline.deployment.type]['build'].__str__:
-                for command in  definitions['deployment'][pipeline.deployment.type]['build']:
+        try:
+            if definitions.deployment.get(pipeline.deployment.type).build.__str__:
+                for command in definitions.deployment.get(pipeline.deployment.type).build:
                     build_stage['commands'].append(command)
         except:
-            print("Deployment definitions error!")
+            print("Deployment definitions error!")    
 
         # Build phases JSON object
         phases = {

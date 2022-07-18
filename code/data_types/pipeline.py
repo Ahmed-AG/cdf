@@ -1,4 +1,3 @@
-import json
 from dataclasses import dataclass
 from dataclasses_json import dataclass_json
 from typing import List, Dict
@@ -37,18 +36,6 @@ class Pipeline:
     deployment: Deployment
     
 
-@dataclass_json
-@dataclass
-class Statement:
-    Action: str
-    Resource: str
-    Effect: str
-
-@dataclass_json
-@dataclass
-class Iam_policy:
-    Statement: List[Statement]
-
 def validate_pipeline_config(pipeline: Dict) -> Dict:
     schema_validate = Pipeline.schema().validate(pipeline)
 
@@ -60,11 +47,3 @@ def validate_pipeline_config(pipeline: Dict) -> Dict:
     else:
         return {}
 
-def validate_iam_policy(policy: Dict) -> Dict:
-    schema_validate = Iam_policy.schema().validate(policy)
-    if schema_validate:
-        return {
-            "error" : schema_validate
-        }
-    else:
-        return {}

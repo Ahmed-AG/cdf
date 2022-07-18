@@ -1,6 +1,7 @@
 import json
 from constructs import Construct
-from code.custom_dataclasses import Pipeline, Iam_policy
+from code.data_types.pipeline import *
+from code.data_types.iam_role import *
 from aws_cdk import (
     Duration,
     Stack,
@@ -45,7 +46,7 @@ class build_codepipeline(Stack):
             assumed_by=iam.ServicePrincipal("codebuild.amazonaws.com")
         )
         # TODO: Add support for Conditions
-        
+
         for statement in iam_policy.Statement:
             # print(statement)
 

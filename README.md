@@ -32,7 +32,7 @@ cdk bootstrap aws://ACCOUNT-NUMBER-1/REGION-1
 ## Usage
  1. Clone the repo
  2. Rename `config.d.templates` to `config.d`
- 2. Edit `config.d/config.json` to set pipelines names, sources, deployment options, and any parameters needed
+ 3. Edit `config.d/config.json` to set pipelines names, sources, deployment options, and any parameters needed
 
 Sample config.json file:
 
@@ -49,9 +49,10 @@ Sample config.json file:
             },
             "deployment" : {
                 "assume_role" :{
-                    "role": ""
+                    "role": "TODO"
                 },
                 "aws_account" : "",
+                "iam_policy_file" : "config.d/iam-policy.json",
                 "region" : "us-east-1",
                 "type" : "cfn",
                 "parameters" : "VpcCIDR=10.0.0.0/16 Region=$REGION",
@@ -67,11 +68,14 @@ Sample config.json file:
     ]
 }
 ```
-3. Run:
+4. Edit the IAM policy file used by the pipeline to deploy resources `config.d/iam-policy.json`
+   Note: This file is referenced in `config.d/config.json`. It is recomended to have different policies for each pipeline
+
+5. Run:
 ```bash
 cdk deploy --all
 ```
-4. Check Codepipline in AWS console
+6. Verify that your pipelines were created in Codepipline in AWS console
 
 ## Support
 To report a bug, request a feature, or submit a suggestion/feedback, please submit an issue through the GitHub repository: https://github.com/Ahmed-AG/cdf/issues/new

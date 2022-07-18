@@ -13,6 +13,7 @@
                     "role": "TODO"
                 },
                 "aws_account" : "",
+                "iam_policy_file" : "config.d/iam-policy.json",
                 "region" : "us-east-1",
                 "type" : "cfn",
                 "parameters" : "VpcCIDR=10.0.0.0/16 Region=$REGION",

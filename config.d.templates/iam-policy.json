@@ -1,0 +1,14 @@
+{
+    "Statement": [
+        {
+            "Action": "ec2:*",
+            "Resource": "*",
+            "Effect": "Allow"
+        },
+        {
+            "Action": "*",
+            "Resource": "*",
+            "Effect": "Allow"
+        }
+    ]
+}

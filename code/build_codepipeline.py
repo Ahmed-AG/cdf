@@ -44,17 +44,24 @@ class build_codepipeline(Stack):
         codebuild_role = iam.Role(self, "codebuild_Role_" + pipeline['name'],
             assumed_by=iam.ServicePrincipal("codebuild.amazonaws.com")
         )
-        # TODO: fix the policy
-        codebuild_role.add_to_policy(iam.PolicyStatement(
-            resources=["*"],
-            actions=["*"]
+        # TODO: Add support for Conditions
+        
+        for statement in iam_policy['Statement']:
+            # print(statement)
+
+            effect = iam.Effect.ALLOW
+            if statement['Effect'] == "Deny":
+                effect = iam.Effect.DENY
+
+            codebuild_role.add_to_policy(iam.PolicyStatement(
+            resources=[statement['Resource']],
+            actions=[statement['Action']],
+            effect=effect
         ))
-        # for statement in iam_policy['Statement']:
-        #     print(statement)
-        #     codebuild_role.add_to_policy(iam.PolicyStatement(
-        #     resources=[statement['Resource']],
-        #     actions=[statement['Action']],
-        #     effect=[statement['Effect']]
+        # Old code        
+        # codebuild_role.add_to_policy(iam.PolicyStatement(
+        #     resources=["*"],
+        #     actions=["*"]
         # ))
 
         project = codebuild.PipelineProject(self, "codebuild_" + pipeline['name'],

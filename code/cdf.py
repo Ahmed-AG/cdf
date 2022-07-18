@@ -1,6 +1,8 @@
 import json
+from typing import Dict
 import aws_cdk as cdk
 from code.build_codepipeline import build_codepipeline
+from code.custom_dataclasses import *
 from constructs import Construct
 from aws_cdk import (
     Duration,
@@ -11,7 +13,7 @@ from aws_cdk import (
 
 class cdf(Stack):
 
-    def __init__(self, config_file, definitions_file, **kwargs) -> None:
+    def __init__(self, config_file: str, definitions_file: str, **kwargs) -> None:
         super().__init__(**kwargs)
 
         app = cdk.App()
@@ -20,29 +22,44 @@ class cdf(Stack):
         definitions = self.import_json_file(definitions_file)
 
         for pipeline in config['pipelines']:
+            # Validate every pipeline configuration
+            try:
+                validation = validate_pipeline_config(pipeline)
+                if validation:
+                    raise Exception(f"Pipeline configuration is not valid: {validation}")
+            except KeyError as e:
+                raise KeyError(f'Pipeline configuration is missing key {e}') from e
 
+            pipeline = Pipeline.from_json(json.dumps(pipeline))
             # Create BuildSpec
             buildspec = self.generate_buildspec(pipeline, definitions )
             print(json.dumps(buildspec, indent=4))
 
             # Create IAM Statement
-            iam_policy_file = pipeline['deployment']['iam_policy_file']
+            iam_policy_file = pipeline.deployment.iam_policy_file
             iam_policy = self.import_json_file(iam_policy_file)
 
+            try:
+                validation = validate_iam_policy(iam_policy)
+                if validation:
+                    raise Exception(f"Iam policy configuration is not valid: {validation}")
+            except KeyError as e:
+                raise KeyError(f'Iam Policy is missing key {e}') from e
+
+            iam_policy = Iam_policy.from_json(json.dumps(iam_policy))
+            
             # Build Pipeline
-            build_codepipeline(app, "cdf-" + pipeline['name'], pipeline, buildspec, iam_policy)
-        
+            build_codepipeline(app, "cdf-" + pipeline.name, pipeline, buildspec, iam_policy)
         app.synth()
         
-    def import_json_file(self, file):
+    def import_json_file(self, file: str) -> object:
         # TODO: Verify conf.d/config.yaml
         # TODO: Run pre-checks such as validating Github creds
-        file_object = open(file)
-        file_json = json.load(file_object)
-
+        with open(file, "r") as file_object:
+            file_json = json.load(file_object)    
         return file_json
 
-    def generate_buildspec(self, pipeline, definitions):
+    def generate_buildspec(self, pipeline: Pipeline, definitions: object) -> Dict[str, any]:
         # Initializations
         install_stage = {"commands" : []}
         pre_build_stage = {"commands" : []}
@@ -50,7 +67,7 @@ class cdf(Stack):
         post_build_stage = {"commands" : []}
 
         # Creating install, pre_build, and post_build stages
-        for check in pipeline['deployment']['checks']:
+        for check in pipeline.deployment.checks:
             try: 
                 if definitions['checks'][check].__str__:
                     for command in definitions['checks'][check]['install']:
@@ -64,8 +81,8 @@ class cdf(Stack):
         
         # Creating build stage
         try: 
-            if definitions['deployment'][pipeline['deployment']['type']]['build'].__str__:
-                for command in  definitions['deployment'][pipeline['deployment']['type']]['build']:
+            if definitions['deployment'][pipeline.deployment.type]['build'].__str__:
+                for command in  definitions['deployment'][pipeline.deployment.type]['build']:
                     build_stage['commands'].append(command)
         except:
             print("Deployment definitions error!")

@@ -4,7 +4,7 @@ from typing import List, Dict
 
 @dataclass_json
 @dataclass
-class Source:
+class Source_Config:
     source_type: str
     repo_name: str
     branch: str
@@ -16,7 +16,7 @@ class Assume_role:
 
 @dataclass_json
 @dataclass
-class Deployment:
+class Deployment_Config:
     assume_role: Assume_role
     aws_account: str
     region: str
@@ -32,8 +32,8 @@ class Deployment:
 class Pipeline:
     name: str
     provider: str
-    source: Source
-    deployment: Deployment
+    source: Source_Config
+    deployment: Deployment_Config
     
 
 def validate_pipeline_config(pipeline: Dict) -> Dict:

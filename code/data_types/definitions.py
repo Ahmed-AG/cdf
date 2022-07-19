@@ -24,8 +24,6 @@ class Definitions:
     checks: Dict[str, Check_Type]
     deployment: Dict[str, Deployment_Type]
 
-    def get_checks(self) -> Dict[str, str]:
-        return self.checks.to_json()
 
 def validate_definitions(definitions: Dict) -> Dict:
     schema_validate = Definitions.schema().validate(definitions)

@@ -78,20 +78,20 @@ class cdf(Stack):
         # Creating install, pre_build, and post_build stages        
         for check in pipeline.deployment.checks:
             try:
-                if definitions.checks.get(check).__str__:
-                    for command in definitions.checks.get(check).install:
+                if definitions.checks[check].__str__:
+                    for command in definitions.checks[check].install:
                         install_stage['commands'].append(command)
-                    for command in definitions.checks.get(check).pre_build:
+                    for command in definitions.checks[check].pre_build:
                         pre_build_stage['commands'].append(command)
-                    for command in definitions.checks.get(check).post_build:
+                    for command in definitions.checks[check].post_build:
                         post_build_stage['commands'].append(command)
             except:
                 print("Check: ", check, "is not defined")
 
         # Creating build stage
         try:
-            if definitions.deployment.get(pipeline.deployment.type).build.__str__:
-                for command in definitions.deployment.get(pipeline.deployment.type).build:
+            if definitions.deployment[pipeline.deployment.type].build.__str__:
+                for command in definitions.deployment[pipeline.deployment.type].build:
                     build_stage['commands'].append(command)
         except:
             print("Deployment definitions error!")    

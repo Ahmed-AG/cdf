@@ -1,7 +1,7 @@
 import json
 from constructs import Construct
 from code.data_types.pipeline import *
-from code.data_types.iam_role import *
+from code.data_types.iam_policy import *
 from aws_cdk import (
     Duration,
     Stack,
@@ -19,7 +19,7 @@ from aws_cdk import (
 
 class build_codepipeline(Stack):
 
-    def __init__(self, scope: Construct, construct_id: str, pipeline: Pipeline, buildspec, iam_policy: Iam_policy, **kwargs) -> None:
+    def __init__(self, scope: Construct, construct_id: str, pipeline: Pipeline, buildspec, iam_policy: Iam_Policy, **kwargs) -> None:
         super().__init__(scope, construct_id, **kwargs)
 
         #TODO:

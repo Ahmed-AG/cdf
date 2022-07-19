@@ -11,11 +11,11 @@ class Statement:
 
 @dataclass_json
 @dataclass
-class Iam_policy:
+class Iam_Policy:
     Statement: List[Statement]
 
 def validate_iam_policy(policy: Dict) -> Dict:
-    schema_validate = Iam_policy.schema().validate(policy)
+    schema_validate = Iam_Policy.schema().validate(policy)
     if schema_validate:
         return {
             "error" : schema_validate

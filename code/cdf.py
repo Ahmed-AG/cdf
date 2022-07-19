@@ -3,7 +3,7 @@ from typing import Dict
 import aws_cdk as cdk
 from code.build_codepipeline import build_codepipeline
 from code.data_types.pipeline import *
-from code.data_types.iam_role import *
+from code.data_types.iam_policy import *
 from code.data_types.definitions import *
 from constructs import Construct
 from aws_cdk import (
@@ -39,7 +39,7 @@ class cdf(Stack):
             except KeyError as e:
                 raise KeyError(f'Pipeline configuration is missing key {e}') from e
             pipeline = Pipeline.from_json(json.dumps(pipeline))
-            
+
             # Create BuildSpec
             buildspec = self.generate_buildspec(pipeline, definitions)
             print(json.dumps(buildspec, indent=4))
@@ -55,7 +55,7 @@ class cdf(Stack):
             except KeyError as e:
                 raise KeyError(f'Iam Policy is missing key {e}') from e
 
-            iam_policy = Iam_policy.from_json(json.dumps(iam_policy))
+            iam_policy = Iam_Policy.from_json(json.dumps(iam_policy))
             
             # Build Pipeline
             build_codepipeline(app, "cdf-" + pipeline.name, pipeline, buildspec, iam_policy)

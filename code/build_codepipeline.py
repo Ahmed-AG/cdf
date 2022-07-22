@@ -72,7 +72,7 @@ class build_codepipeline(Stack):
                 build_image = codebuild.LinuxBuildImage.from_asset(self, "base-image", directory="images/base-image"),
             ),
             environment_variables={
-                "PIPELINE": codebuild.BuildEnvironmentVariable(value=json.dumps(pipeline.to_json()))
+                "PIPELINE": codebuild.BuildEnvironmentVariable(value=pipeline.to_json())
                 }
         )
 

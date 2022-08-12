@@ -165,19 +165,3 @@ class build_pipeline(Stack):
                 except:
                     print("Check: ", check, "is not defined")
         return buildspec
-
-# END of Class
-
-        # # Build Pipeline
-        # codepipeline.Pipeline(self, pipeline['name'],
-        #     stages=[
-        #         codepipeline.StageProps(
-        #             stage_name="Source",
-        #             actions=[source_action]
-        #             ),
-        #         codepipeline.StageProps(
-        #              stage_name="Build",
-        #              actions=[build_action]
-        #              )
-        #         ]
-        # )

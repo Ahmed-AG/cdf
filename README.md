@@ -40,7 +40,7 @@ Sample config.json file:
 {
     "pipelines" :[
         {
-            "name" : "Production-Pipeline1",
+            "name" : "cfn-pipeline1",
             "provider" : "aws",
             "source" : {
                 "source_type" : "codecommit",
@@ -64,7 +64,7 @@ Sample config.json file:
                     "checkov"
                 ]
             }
-        }
+        },
     ]
 }
 ```

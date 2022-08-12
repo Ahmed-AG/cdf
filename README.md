@@ -10,13 +10,13 @@ Based on JSON configuration files, CDF uses AWS CDK to automatically create Code
 Infrastructure as Code Tools  | Link |
 --- | --- |
 Cloud Formation | https://aws.amazon.com/cloudformation/
-Terraform (Coming soon) | https://www.terraform.io
+Terraform | https://www.terraform.io
 
 ### Security testing tools
 Tools | Description | Link |
 --- | --- | --- |
 cfn_nag | The cfn-nag tool looks for patterns in CloudFormation templates that may indicate insecure infrastructure | https://github.com/stelligent/cfn_nag
-checkov (Coming soon) | Checkov uses a common command line interface to manage and analyze infrastructure as code (IaC) scan results across platforms such as Terraform, CloudFormation, Kubernetes, Helm, ARM Templates and Serverless framework | https://www.checkov.io
+checkov | Checkov uses a common command line interface to manage and analyze infrastructure as code (IaC) scan results across platforms such as Terraform, CloudFormation, Kubernetes, Helm, ARM Templates and Serverless framework | https://www.checkov.io
 Semgrep (Coming soon) | Static analysis at ludicrous speed Find bugs and enforce code standards | https://semgrep.dev
 
 ## Requirements

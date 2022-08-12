@@ -1,6 +1,7 @@
+#!/usr/bin/env python3
 import json
 import aws_cdk as cdk
-from code.build_codepipeline import build_codepipeline
+from code.pipeline import build_pipeline
 from constructs import Construct
 from aws_cdk import (
     Duration,
@@ -20,18 +21,12 @@ class cdf(Stack):
         definitions = self.import_json_file(definitions_file)
 
         for pipeline in config['pipelines']:
-
-            # Create BuildSpec
-            buildspec = self.generate_buildspec(pipeline, definitions )
-            print(json.dumps(buildspec, indent=4))
-
-            # Create IAM Statement
+            # Import Iam policy file
             iam_policy_file = pipeline['deployment']['iam_policy_file']
             iam_policy = self.import_json_file(iam_policy_file)
-
-            # Build Pipeline
-            build_codepipeline(app, "cdf-" + pipeline['name'], pipeline, buildspec, iam_policy)
-        
+            
+            # Build a pipeline
+            build_pipeline(app, "cdf-" + pipeline['name'], pipeline, definitions, iam_policy)
         app.synth()
         
     def import_json_file(self, file):
@@ -41,47 +36,3 @@ class cdf(Stack):
         file_json = json.load(file_object)
 
         return file_json
-
-    def generate_buildspec(self, pipeline, definitions):
-        # Initializations
-        install_stage = {"commands" : []}
-        pre_build_stage = {"commands" : []}
-        build_stage = {"commands" : []}
-        post_build_stage = {"commands" : []}
-
-        # Creating install, pre_build, and post_build stages
-        for check in pipeline['deployment']['checks']:
-            try: 
-                if definitions['checks'][check].__str__:
-                    for command in definitions['checks'][check]['install']:
-                        install_stage['commands'].append(command)
-                    for command in definitions['checks'][check]['pre_build']:
-                        pre_build_stage['commands'].append(command)
-                    for command in definitions['checks'][check]['post_build']:
-                        post_build_stage['commands'].append(command)
-            except:
-                print("Check: ", check, "is not defined")
-        
-        # Creating build stage
-        try: 
-            if definitions['deployment'][pipeline['deployment']['type']]['build'].__str__:
-                for command in  definitions['deployment'][pipeline['deployment']['type']]['build']:
-                    build_stage['commands'].append(command)
-        except:
-            print("Deployment definitions error!")
-
-        # Build phases JSON object
-        phases = {
-            "install"       : install_stage,
-            "pre_build"     : pre_build_stage,
-            "build"         : build_stage,
-            "post_build"    : post_build_stage
-            }
-
-        # Build final buildspec JSON object
-        buildspec = {
-                "version"   : "0.2",
-                "phases"    : phases
-                }
-        
-        return buildspec

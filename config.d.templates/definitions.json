@@ -1,51 +1,105 @@
 {
     "deployment" : {
-        "cfn" : {
-            "install" : [
-                "aws --version"
-            ],
-            "pre_build" : [],
-            "build" : [
-                "SOURCE_BUCKET=$(aws s3 ls | grep sourcebucket | cut -d ' ' -f3)",
-                "STACK_NAME=CFN-$(echo $PIPELINE | jq -r '.name')",
-                "REGION=$(echo $PIPELINE | jq -r '.deployment.region')",
-                "TEMPLATE_FILE=$(echo $PIPELINE | jq -r '.deployment.deployment_file')",
-                "PARAMETERS=$(echo $PIPELINE | jq -r '.deployment.parameters')",
-                "CAPABILITIES=$(echo $PIPELINE | jq -r '.deployment.capabilities')",
-                "echo \"SOURCE_BUCKET=\"$SOURCE_BUCKET",
-                "echo \"STACK_NAME=\"$STACK_NAME",
-                "echo \"REGION=\"$REGION",
-                "echo \"TEMPLATE_FILE=\"$TEMPLATE_FILE",
-                "echo \"PARAMETERS=\"$PARAMETERS",
-                "echo \"CAPABILITIES=\"$CAPABILITIES",
-                "aws s3 sync . s3://$SOURCE_BUCKET",
-                "aws cloudformation deploy --stack-name $STACK_NAME --template-file $TEMPLATE_FILE --parameter-overrides $PARAMETERS --capabilities $CAPABILITIES"
-            ],
-            "post_build" : []
-        },
-        "terraform" : {
-            "install" : [],
-            "pre_build" : [],
-            "build" : [
-                "#TODO: Terraform build"
-            ],
-            "post_build" : []
-        }
+        "cfn" : [
+            {
+                "project_name": "deploy",
+                "security_checks": "true",
+                "build_spec_phases": {
+                    "install" : [
+                        "aws --version"
+                    ],
+                    "pre_build" : [],
+                    "build" : [
+                        "PIPELINE_NAME=$(echo $PIPELINE | jq -r '.name')",
+                        "SOURCE_BUCKET=$(aws cloudformation describe-stack-resources --stack-name cdf-$PIPELINE_NAME | jq -r '.StackResources[].PhysicalResourceId' |grep sourcebucket)",
+                        "REGION=$(echo $PIPELINE | jq -r '.deployment.region')",
+                        "TEMPLATE_FILE=$(echo $PIPELINE | jq -r '.deployment.deployment_file')",
+                        "PARAMETERS=$(echo $PIPELINE | jq -r '.deployment.parameters')",
+                        "CAPABILITIES=$(echo $PIPELINE | jq -r '.deployment.capabilities')",
+                        "echo \"PIPELINE_NAME=\"$PIPELINE_NAME",
+                        "echo \"SOURCE_BUCKET=\"$SOURCE_BUCKET",
+                        "echo \"REGION=\"$REGION",
+                        "echo \"TEMPLATE_FILE=\"$TEMPLATE_FILE",
+                        "echo \"PARAMETERS=\"$PARAMETERS",
+                        "echo \"CAPABILITIES=\"$CAPABILITIES",
+                        "aws s3 sync . s3://$SOURCE_BUCKET",
+                        "aws cloudformation deploy --stack-name $PIPELINE_NAME --template-file $TEMPLATE_FILE --parameter-overrides $PARAMETERS --capabilities $CAPABILITIES"
+                    ],
+                    "post_build" : []   
+                }
+            }
+        ],
+        "terraform" : 
+        [
+            {
+                "project_name": "plan",
+                "security_checks": "true",
+                "build_spec_phases": {
+                    "install" : [
+                        "terraform --version"
+                    ],
+                    "pre_build" : [],
+                    "build" : [
+                        "PIPELINE_NAME=$(echo $PIPELINE | jq -r '.name')",
+                        "SOURCE_BUCKET=$(aws cloudformation describe-stack-resources --stack-name cdf-$PIPELINE_NAME | jq -r '.StackResources[].PhysicalResourceId' |grep sourcebucket)",
+                        "REGION=$(echo $PIPELINE | jq -r '.deployment.region')",
+                        "DEPLOYMENT_FOLDER=$(echo $PIPELINE | jq -r '.deployment.deployment_folder')",
+                        "PARAMETERS=$(echo $PIPELINE | jq -r '.deployment.parameters')",
+                        "echo \"PIPELINE_NAME=\"$PIPELINE_NAME",
+                        "echo \"SOURCE_BUCKET=\"$SOURCE_BUCKET",
+                        "echo \"REGION=\"$REGION",
+                        "echo \"DEPLOYMENT_FOLDER=\"$DEPLOYMENT_FOLDER",
+                        "echo \"PARAMETERS=\"$PARAMETERS",
+                        "cd $DEPLOYMENT_FOLDER",
+                        "terraform init",
+                        "terraform plan"
+                    ],
+                    "post_build" : []
+                }
+            },
+            {
+                "project_name": "apply",
+                "security_checks": "false",
+                "build_spec_phases": {
+                    "install" : [
+                        "terraform --version"
+                    ],
+                    "pre_build" : [],
+                    "build" : [
+                        "PIPELINE_NAME=$(echo $PIPELINE | jq -r '.name')",
+                        "SOURCE_BUCKET=$(aws cloudformation describe-stack-resources --stack-name cdf-$PIPELINE_NAME | jq -r '.StackResources[].PhysicalResourceId' |grep sourcebucket)",
+                        "REGION=$(echo $PIPELINE | jq -r '.deployment.region')",
+                        "DEPLOYMENT_FOLDER=$(echo $PIPELINE | jq -r '.deployment.deployment_folder')",
+                        "PARAMETERS=$(echo $PIPELINE | jq -r '.deployment.parameters')",
+                        "echo \"PIPELINE_NAME=\"$PIPELINE_NAME",
+                        "echo \"SOURCE_BUCKET=\"$SOURCE_BUCKET",
+                        "echo \"REGION=\"$REGION",
+                        "echo \"DEPLOYMENT_FOLDER=\"$DEPLOYMENT_FOLDER",
+                        "echo \"PARAMETERS=\"$PARAMETERS",
+                        "cd $DEPLOYMENT_FOLDER",
+                        "terraform init",
+                        "terraform apply --auto-approve"
+                    ],
+                    "post_build" : []
+                }
+            }
+        ]
     },
     "checks" : {
         "general_all" : {
             "install" : [
-                "aws --version"
+                "mkdir /tmp/reports"
             ],
             "pre_build" : [
-                "REPORTS_BUCKET=$(aws s3 ls | grep reportsbucket | cut -d ' ' -f3)",
+                "PIPELINE_NAME=$(echo $PIPELINE | jq -r '.name')",
+                "REPORTS_BUCKET=$(aws cloudformation describe-stack-resources --stack-name cdf-$PIPELINE_NAME | jq -r '.StackResources[].PhysicalResourceId' |grep reportsbucket)",
                 "echo \"REPORTS_BUCKET=\"$REPORTS_BUCKET",
                 "STACK_NAME=CFN-$(echo $PIPELINE | jq -r '.name')",
                 "echo \"STACK_NAME=\"$STACK_NAME"
             ],
             "post_build" : [
                 "CURRENT_TIME=$(date +\"%S%M%H%m%d%y\")",
-                "aws s3 cp *output* s3://$REPORTS_BUCKET/$STACK_NAME/$CURRENT_TIME/"
+                "aws s3 cp /tmp/reports/* s3://$REPORTS_BUCKET/$STACK_NAME/$CURRENT_TIME/ || true"
             ]
         },
         "cfn_nag" : {
@@ -55,8 +109,8 @@
             "pre_build" : [
                 "TEMPLATE_FILE=$(echo $PIPELINE | jq -r '.deployment.deployment_file')",
                 "echo \"TEMPLATE_FILE=\"$TEMPLATE_FILE",
-                "cfn_nag_scan --input-path $TEMPLATE_FILE --output-format json > cfn_nag_output.json || true",
-                "cat cfn_nag_output.json"
+                "cfn_nag_scan --input-path $TEMPLATE_FILE --output-format json > /tmp/reports/cfn_nag_output.json || true",
+                "cat /tmp/reports/cfn_nag_output.json"
             ],
             "post_build" : []
         },
@@ -64,7 +118,9 @@
             "install" : [
                 "checkov --version"
             ],
-            "pre_build" : [],
+            "pre_build" : [
+                "checkov -d . -o junitxml --output-file-path /tmp/reports/ || true "
+            ],
             "post_build" : []
         },
         "snyk" : {

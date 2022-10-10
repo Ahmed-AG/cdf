@@ -12,7 +12,7 @@ from aws_cdk import (
 
 class cdf(Stack):
 
-    def __init__(self, config_file, definitions_file, **kwargs) -> None:
+    def __init__(self, config_file: str, definitions_file: str, **kwargs) -> None:
         super().__init__(**kwargs)
 
         app = cdk.App()
@@ -29,10 +29,10 @@ class cdf(Stack):
             build_pipeline(app, "cdf-" + pipeline['name'], pipeline, definitions, iam_policy)
         app.synth()
         
-    def import_json_file(self, file):
+    def import_json_file(self, file: str):
         # TODO: Verify conf.d/config.yaml
         # TODO: Run pre-checks such as validating Github creds
-        file_object = open(file)
-        file_json = json.load(file_object)
+        with open(file, "r") as file_object:
+            file_json = json.load(file_object)
 
         return file_json

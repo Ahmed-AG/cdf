@@ -16,6 +16,7 @@ from aws_cdk import (
     aws_s3 as s3,
     SecretValue,
 )
+from typing import List, Dict
 
 class build_pipeline(Stack):
 
@@ -44,7 +45,7 @@ class build_pipeline(Stack):
         )
         #END of init
         
-    def set_stages(self):
+    def set_stages(self) -> List[codepipeline.StageProps]:
         
         # Set source
         repo_name = self.pipeline['source']['repo_name']
@@ -129,7 +130,7 @@ class build_pipeline(Stack):
         
         return stages
 
-    def generate_buildspec(self, project, pipeline):
+    def generate_buildspec(self, project, pipeline) -> Dict[str, any]:
         # Initializations
         buildspec = {
             "version"   : "0.2",

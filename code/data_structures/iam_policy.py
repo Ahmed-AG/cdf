@@ -4,7 +4,7 @@ from typing import List, Dict
 
 @dataclass_json
 @dataclass
-class Statement:
+class cdfStatement:
     Action: str
     Resource: str
     Effect: str
@@ -12,7 +12,7 @@ class Statement:
 @dataclass_json
 @dataclass
 class cdfIamPolicy:
-    Statement: List[Statement]
+    Statement: List[cdfStatement]
 
 def validate_iam_policy(policy: Dict) -> Dict:
     schema_validate = cdfIamPolicy.schema().validate(policy)

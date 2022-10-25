@@ -1,6 +1,13 @@
 #!/usr/bin/env python3
 import json
 from constructs import Construct
+from typing import List, Dict
+from code.data_structures import (
+    cdfDefinitions,
+    cdfDeployment,
+    cdfIamPolicy,
+    cdfPipeline,
+)
 from aws_cdk import (
     Duration,
     Stack,
@@ -16,11 +23,11 @@ from aws_cdk import (
     aws_s3 as s3,
     SecretValue,
 )
-from typing import List, Dict
+
 
 class build_pipeline(Stack):
 
-    def __init__(self, scope: Construct, construct_id: str, pipeline, definitions, iam_policy, **kwargs) -> None:
+    def __init__(self, scope: Construct, construct_id: str, pipeline: cdfPipeline, definitions: cdfDefinitions, iam_policy: cdfIamPolicy, **kwargs) -> None:
         super().__init__(scope, construct_id, **kwargs)
         
         # Set parameters
@@ -40,7 +47,7 @@ class build_pipeline(Stack):
         stages = self.set_stages()
 
         # Build Pipeline
-        codepipeline.Pipeline(self, pipeline['name'],
+        codepipeline.Pipeline(self, pipeline.name,
             stages=stages
         )
         #END of init
@@ -48,12 +55,12 @@ class build_pipeline(Stack):
     def set_stages(self) -> List[codepipeline.StageProps]:
         
         # Set source
-        repo_name = self.pipeline['source']['repo_name']
+        repo_name = self.pipeline.source.repo_name
         repository = codecommit.Repository.from_repository_name(self, repo_name,
             repository_name=repo_name
         )
         source_output = codepipeline.Artifact()
-        branch_name = self.pipeline['source']['branch']
+        branch_name = self.pipeline.source.branch
         source_action = codepipeline_actions.CodeCommitSourceAction(
             action_name="CodeCommit",
             repository=repository,
@@ -71,19 +78,19 @@ class build_pipeline(Stack):
 
         # Build Codebuild Role
         # TODO: Add support for Conditions
-        pipeline_name = self.pipeline['name']
+        pipeline_name = self.pipeline.name
         codebuild_role = iam.Role(self, "codebuild_Role_" + pipeline_name,
             assumed_by=iam.ServicePrincipal("codebuild.amazonaws.com")
         )
 
-        for statement in self.iam_policy['Statement']:
+        for statement in self.iam_policy.Statement:
             effect = iam.Effect.ALLOW
-            if statement['Effect'] == "Deny":
+            if statement.Effect == "Deny":
                 effect = iam.Effect.DENY
 
             codebuild_role.add_to_policy(iam.PolicyStatement(
-                resources=[statement['Resource']],
-                actions=[statement['Action']],
+                resources=[statement.Resource],
+                actions=[statement.Action],
                 effect=effect
                 )
             )
@@ -92,7 +99,7 @@ class build_pipeline(Stack):
         codebuild_project_image = codebuild.LinuxBuildImage.from_asset(self, "base-image", directory="images/base-image")
 
         # Get projects_definition 
-        projects_definition = self.definitions['deployment'][self.pipeline['deployment']['type']]
+        projects_definition = self.definitions.deployment[self.pipeline.deployment.type]
 
         # Loop over projects_definition to create CodeBuild Projects
         for project in projects_definition:
@@ -102,14 +109,14 @@ class build_pipeline(Stack):
             # print(json.dumps(buildspec, indent=4))
 
             # CodeBuild Project:
-            build_project = codebuild.PipelineProject(self, "codebuild_" + project['project_name'],
+            build_project = codebuild.PipelineProject(self, "codebuild_" + project.project_name,
                 build_spec=codebuild.BuildSpec.from_object(buildspec),
                 role=codebuild_role,
                 environment=codebuild.BuildEnvironment(
                     build_image = codebuild_project_image,
                 ),
                 environment_variables={
-                    "PIPELINE": codebuild.BuildEnvironmentVariable(value=json.dumps(self.pipeline))
+                    "PIPELINE": codebuild.BuildEnvironmentVariable(value=self.pipeline.dict())
                     }
             )
 
@@ -123,14 +130,14 @@ class build_pipeline(Stack):
             
             # Adding CodeBuild stages to Stages
             codebuild_stage = codepipeline.StageProps(
-                stage_name=project['project_name'],
+                stage_name=project.project_name,
                 actions=[build_action]
                 )
             stages.append(codebuild_stage)
         
         return stages
 
-    def generate_buildspec(self, project, pipeline) -> Dict[str, any]:
+    def generate_buildspec(self, project: cdfDeployment, pipeline: cdfPipeline) -> Dict[str, any]:
         # Initializations
         buildspec = {
             "version"   : "0.2",
@@ -143,25 +150,25 @@ class build_pipeline(Stack):
             }
 
         # Adding deployment Phases: All Phses
-        for command in project['build_spec_phases']['install']:
+        for command in project.build_spec_phases.install:
             buildspec['phases']['install']['commands'].append(command)
-        for command in project['build_spec_phases']['pre_build']:
+        for command in project.build_spec_phases.pre_build:
             buildspec['phases']['pre_build']['commands'].append(command)
-        for command in project['build_spec_phases']['build']:
+        for command in project.build_spec_phases.build:
             buildspec['phases']['build']['commands'].append(command)
-        for command in project['build_spec_phases']['post_build']:
+        for command in project.build_spec_phases.post_build:
             buildspec['phases']['post_build']['commands'].append(command)
 
         # Adding Checks stages: install, pre_build, and post_build
-        if project['security_checks'] == "true":
-            for check in pipeline['deployment']['checks']:
+        if project.security_checks == "true":
+            for check in pipeline.deployment.checks:
                 try: 
-                    if self.definitions['checks'][check].__str__:
-                        for command in self.definitions['checks'][check]['install']:
+                    if self.definitions.checks[check].__str__:
+                        for command in self.definitions.checks[check].install:
                             buildspec['phases']['install']['commands'].append(command)
-                        for command in self.definitions['checks'][check]['pre_build']:
+                        for command in self.definitions.checks[check].pre_build:
                             buildspec['phases']['pre_build']['commands'].append(command)
-                        for command in self.definitions['checks'][check]['post_build']:
+                        for command in self.definitions.checks[check].post_build:
                             buildspec['phases']['post_build']['commands'].append(command)
                 except:
                     print("Check: ", check, "is not defined")

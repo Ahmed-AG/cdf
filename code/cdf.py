@@ -2,6 +2,11 @@
 import json
 import aws_cdk as cdk
 from code.pipeline import build_pipeline
+from code.data_structures import (
+    cdfPipeline,
+    cdfDefinitions,
+    cdfIamPolicy
+)
 from constructs import Construct
 from aws_cdk import (
     Duration,
@@ -19,14 +24,19 @@ class cdf(Stack):
 
         config = self.import_json_file(config_file)
         definitions = self.import_json_file(definitions_file)
+        definitions: cdfDefinitions = cdfDefinitions.parse_obj(definitions)
 
         for pipeline in config['pipelines']:
+
+            pipeline: cdfPipeline = cdfPipeline.parse_obj(pipeline)
             # Import Iam policy file
-            iam_policy_file = pipeline['deployment']['iam_policy_file']
+
+            iam_policy_file = pipeline.deployment.iam_policy_file
             iam_policy = self.import_json_file(iam_policy_file)
             
+            iam_policy: cdfIamPolicy = cdfIamPolicy.parse_obj(iam_policy)
             # Build a pipeline
-            build_pipeline(app, "cdf-" + pipeline['name'], pipeline, definitions, iam_policy)
+            build_pipeline(app, "cdf-" + pipeline.name, pipeline, definitions, iam_policy)
         app.synth()
         
     def import_json_file(self, file: str):

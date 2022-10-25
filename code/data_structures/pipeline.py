@@ -1,78 +1,41 @@
-from dataclasses import dataclass
-from dataclasses_json import dataclass_json
-import definitions
-from typing import List, Dict
-from enum import Enum
-import json
+from typing import List, Literal, Optional
+from typing import Union
+from pydantic import BaseModel
 
 
-class cdfDeploymentTypes(Enum):
-    CFN = "cfn"
-    TERRAFORM = "terraform"
-
-
-@dataclass_json
-@dataclass
-class cdfSource:
+class cdfSource(BaseModel):
     source_type: str
     repo_name: str
     branch: str
 
-@dataclass_json
-@dataclass
-class Assume_role:
+class Assume_role(BaseModel):
     role: str
 
-@dataclass_json
-@dataclass
-class cdfDeploymentcfn:
+
+class cdfDeploymentcfn(BaseModel):
     assume_role: Assume_role
     aws_account: str
     region: str
-    type: cdfDeploymentTypes
-    parameters: str
-    capabilities: str
+    type: Literal["cfn"]
+    parameters: Optional[str]
+    capabilities: Optional[str]
     deployment_file: str
     iam_policy_file: str
-    checks: List[definitions.cdfCheckTypes]
+    checks: List[str]
 
-@dataclass_json
-@dataclass
-class cdfDeploymentTerraform:
+class cdfDeploymentTerraform(BaseModel):
     assume_role: Assume_role
     aws_account: str
     region: str
-    type: cdfDeploymentTypes
-    parameters: str
+    type: Literal["terraform"]
+    parameters: Optional[str]
     deployment_folder: str
     iam_policy_file: str
-    checks: List[definitions.cdfCheckTypes]
+    checks: List[str]
 
 
-@dataclass_json
-@dataclass
-class cdfPipeline:
+class cdfPipeline(BaseModel):
     name: str
     provider: str
     source: cdfSource
-    deployment: cdfDeploymentcfn | cdfDeploymentTerraform
-    
-
-def validate_pipeline_config(pipeline: Dict) -> Dict:
-    schema_validate = cdfPipeline.schema().validate(pipeline)
-
-    if schema_validate:
-        return {
-            "pipeline_name": pipeline['name'],
-            "error" : schema_validate
-        }
-    else:
-        return {}
-
-if __name__ == "__main__":
-    with open("config.d/config.json", "r") as f:
-        raw_object = json.load(f)
-    # print(raw_object)
-    for pipeline in raw_object['pipelines']:
-        config = cdfPipeline.from_json(json.dumps(pipeline))
-        print(config)
+    deployment: Union[cdfDeploymentcfn , cdfDeploymentTerraform]

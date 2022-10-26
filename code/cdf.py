@@ -22,24 +22,36 @@ class cdf(Stack):
 
         app = cdk.App()
 
-        config = self.import_json_file(config_file)
-        definitions = self.import_json_file(definitions_file)
-        definitions: cdfDefinitions = cdfDefinitions.parse_obj(definitions)
+        config: dict = self.import_json_file(config_file)
+        definitions_config: dict = self.import_json_file(definitions_file)
+        definitions: cdfDefinitions = self.make_definitions(definitions_config)
 
-        for pipeline in config['pipelines']:
+        for pipeline_config in config['pipelines']:
 
-            pipeline: cdfPipeline = cdfPipeline.parse_obj(pipeline)
+            pipeline: cdfPipeline = self.make_pipeline(pipeline_config)
             # Import Iam policy file
 
-            iam_policy_file = pipeline.deployment.iam_policy_file
-            iam_policy = self.import_json_file(iam_policy_file)
+            iam_policy_file: str = pipeline.deployment.iam_policy_file
+            iam_policy_config: dict = self.import_json_file(iam_policy_file)
             
-            iam_policy: cdfIamPolicy = cdfIamPolicy.parse_obj(iam_policy)
+            iam_policy: cdfIamPolicy = self.make_iam_policy(iam_policy_config)
             # Build a pipeline
             build_pipeline(app, "cdf-" + pipeline.name, pipeline, definitions, iam_policy)
         app.synth()
-        
-    def import_json_file(self, file: str):
+
+    def make_definitions(self, json_config: dict) -> cdfDefinitions:
+        definitions: cdfDefinitions = cdfDefinitions.parse_obj(json_config)
+        return definitions
+
+    def make_pipeline(self, json_config: dict) -> cdfPipeline:
+        pipeline: cdfPipeline = cdfPipeline.parse_obj(json_config)
+        return pipeline
+
+    def make_iam_policy(self, json_config: dict) -> cdfIamPolicy:
+        policy: cdfIamPolicy = cdfIamPolicy.parse_obj(json_config)
+        return policy
+
+    def import_json_file(self, file: str) -> dict:
         # TODO: Verify conf.d/config.yaml
         # TODO: Run pre-checks such as validating Github creds
         with open(file, "r") as file_object:

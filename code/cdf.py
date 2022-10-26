@@ -15,12 +15,17 @@ from aws_cdk import (
     SecretValue,
 )
 
+def app(config_file: str, definitions_file: str) -> None:
+    app: Construct = cdk.App()
+    cdf(app, config_file, definitions_file)
+    app.synth()
+
 class cdf(Stack):
 
-    def __init__(self, config_file: str, definitions_file: str, **kwargs) -> None:
+    def __init__(self, app: Construct, config_file: str, definitions_file: str, **kwargs) -> None:
         super().__init__(**kwargs)
-
-        app = cdk.App()
+        
+        app = app
 
         config: dict = self.import_json_file(config_file)
         definitions_config: dict = self.import_json_file(definitions_file)
@@ -37,7 +42,6 @@ class cdf(Stack):
             iam_policy: cdfIamPolicy = self.make_iam_policy(iam_policy_config)
             # Build a pipeline
             build_pipeline(app, "cdf-" + pipeline.name, pipeline, definitions, iam_policy)
-        app.synth()
 
     def make_definitions(self, json_config: dict) -> cdfDefinitions:
         definitions: cdfDefinitions = cdfDefinitions.parse_obj(json_config)

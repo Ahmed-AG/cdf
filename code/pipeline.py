@@ -116,7 +116,7 @@ class build_pipeline(Stack):
                     build_image = codebuild_project_image,
                 ),
                 environment_variables={
-                    "PIPELINE": codebuild.BuildEnvironmentVariable(value=self.pipeline.dict())
+                    "PIPELINE": codebuild.BuildEnvironmentVariable(value=json.dumps(self.pipeline.dict()))
                     }
             )
 

@@ -9,6 +9,7 @@ __pycache__/
 *$py.class
 
 # Environments
+Pipfile*
 .env
 .venv
 env/

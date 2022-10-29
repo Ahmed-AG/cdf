@@ -1,5 +1,5 @@
 from pydantic import BaseModel
-from typing import List, Dict
+from typing import List, Dict, Union, Literal
 
 
 class cdfCheckPhases(BaseModel):
@@ -16,9 +16,13 @@ class cdfBuildSpecPhases(BaseModel):
     
 class cdfDeployment(BaseModel):
     project_name: str
-    security_checks: str
+    security_checks: Union[Literal["true"], Literal["false"]]
     build_spec_phases: cdfBuildSpecPhases
 
 class cdfDefinitions(BaseModel):
     checks: Dict[str, cdfCheckPhases]
     deployment: Dict[str, List[cdfDeployment]]
+
+def make_definitions(json_config: dict) -> cdfDefinitions:
+    definitions: cdfDefinitions = cdfDefinitions.parse_obj(json_config)
+    return definitions

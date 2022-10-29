@@ -2,11 +2,15 @@
 import json
 from constructs import Construct
 from typing import List, Dict
-from code.data_structures import (
+from code.pipeline import (
+    cdfPipeline
+)
+from code.definitions import (
     cdfDefinitions,
-    cdfDeployment,
-    cdfIamPolicy,
-    cdfPipeline,
+    cdfDeployment
+)
+from code.iam import (
+    cdfIamPolicy
 )
 from aws_cdk import (
     Duration,

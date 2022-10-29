@@ -1,11 +1,11 @@
 from pydantic import BaseModel
-from typing import List
+from typing import List, Union, Literal
 
 
 class cdfIamStatement(BaseModel):
     Action: str
     Resource: str
-    Effect: str
+    Effect: Union[Literal["Allow"], Literal["Deny"]]
 
 class cdfIamPolicy(BaseModel):
     Statement: List[cdfIamStatement]

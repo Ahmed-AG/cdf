@@ -40,6 +40,6 @@ class cdfPipeline(BaseModel):
     source: cdfSource
     deployment: Union[cdfDeploymentcfn , cdfDeploymentTerraform]
     
-def make_pipeline(json_config: dict) -> cdfPipeline:
+def parse_cdfPipeline(json_config: dict) -> cdfPipeline:
     pipeline: cdfPipeline = cdfPipeline.parse_obj(json_config)
     return pipeline

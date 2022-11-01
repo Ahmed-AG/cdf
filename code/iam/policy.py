@@ -10,6 +10,6 @@ class cdfIamStatement(BaseModel):
 class cdfIamPolicy(BaseModel):
     Statement: List[cdfIamStatement]
 
-def make_iam_policy(json_config: dict) -> cdfIamPolicy:
+def parse_cdfIamPolicy(json_config: dict) -> cdfIamPolicy:
     policy: cdfIamPolicy = cdfIamPolicy.parse_obj(json_config)
     return policy

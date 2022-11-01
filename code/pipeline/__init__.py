@@ -1,4 +1,4 @@
 from .pipeline import (
     cdfPipeline,
-    make_pipeline
+    parse_cdfPipeline
 )

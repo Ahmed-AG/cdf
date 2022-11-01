@@ -4,15 +4,15 @@ import aws_cdk as cdk
 from code.build_pipeline import build_pipeline
 from code.iam.policy import (
     cdfIamPolicy,
-    make_iam_policy
+    parse_cdfIamPolicy
 )
 from code.definitions import (
     cdfDefinitions,
-    make_definitions
+    parse_cdfDefinitions
 )
 from code.pipeline import (
     cdfPipeline,
-    make_pipeline
+    parse_cdfPipeline
 )
 from code.utilities import (
     import_json_file
@@ -39,16 +39,16 @@ class cdf(Stack):
 
         config: dict = import_json_file(config_file)
         definitions_config: dict = import_json_file(definitions_file)
-        definitions: cdfDefinitions = make_definitions(definitions_config)
+        definitions: cdfDefinitions = parse_cdfDefinitions(definitions_config)
 
         for pipeline_config in config['pipelines']:
 
-            pipeline: cdfPipeline = make_pipeline(pipeline_config)
+            pipeline: cdfPipeline = parse_cdfPipeline(pipeline_config)
             # Import Iam policy file
 
             iam_policy_file: str = pipeline.deployment.iam_policy_file
             iam_policy_config: dict = import_json_file(iam_policy_file)
             
-            iam_policy: cdfIamPolicy = make_iam_policy(iam_policy_config)
+            iam_policy: cdfIamPolicy = parse_cdfIamPolicy(iam_policy_config)
             # Build a pipeline
             build_pipeline(app, "cdf-" + pipeline.name, pipeline, definitions, iam_policy)

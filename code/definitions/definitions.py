@@ -23,6 +23,6 @@ class cdfDefinitions(BaseModel):
     checks: Dict[str, cdfCheckPhases]
     deployment: Dict[str, List[cdfDeployment]]
 
-def make_definitions(json_config: dict) -> cdfDefinitions:
+def parse_cdfDefinitions(json_config: dict) -> cdfDefinitions:
     definitions: cdfDefinitions = cdfDefinitions.parse_obj(json_config)
     return definitions
